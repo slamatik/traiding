@@ -4,6 +4,8 @@ import yfinance as yf
 from signal_functions import *
 from helper import *
 
+# todo Strategy backtesting: Backtrader
+
 # update_data()
 data, names = read_data_csv('sp')
 
