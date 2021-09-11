@@ -83,3 +83,23 @@ def piercing_line(today_idx, df):
             if today.Close > middle:
                 return True
     return False
+
+
+def is_consolidating(df, pct=2):
+    recent_candlesticks = df[-15:]
+    max_close = recent_candlesticks.Close.max()
+    min_close = recent_candlesticks.Close.min()
+
+    threshold = 1 - pct / 100
+    if min_close > (max_close * threshold):
+        return True
+
+
+def is_breaking_out(df, pct=2):
+    last_close = df[-1:].Close.values[0]
+
+    if is_consolidating(df[:-1], pct):
+        recent_closes = df[-16: -1]
+
+        if last_close > recent_closes.Close.max():
+            return True

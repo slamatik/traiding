@@ -1,4 +1,5 @@
 import backtrader as bt
+import math
 import talib
 import talib as ta
 import pandas as pd
@@ -11,10 +12,6 @@ class HammerStrategy(bt.Strategy):
         print(f'{dt.isoformat()}, {txt}')
 
     def __init__(self):
-        # Keep a reference to the 'close' line in the data[0] dataseries
-        # self.dataclose = self.datas[0].close
-
-        # To keep track of pending orders and buy price/commission
         self.order = None
         self.buyprice = None
         self.buycomm = None
@@ -26,10 +23,6 @@ class HammerStrategy(bt.Strategy):
 
         self.yClose = self.datas[-1].close
         self.yOpen = self.datas[-1].open
-        # self.test = None
-
-        # self.bullish_hammer = False
-        # self.bearish_hammer = False
 
         self.ema = bt.indicators.ExponentialMovingAverage(period=50)
         self.atr = bt.indicators.AverageTrueRange()
@@ -61,11 +54,6 @@ class HammerStrategy(bt.Strategy):
                 return True
         return False
 
-    def bullish_engulfing(self, open, close, yopen, yclose):
-        if self.is_bearish_candlestick(yopen, yclose):
-            if open < yclose and close > yopen:
-                return True
-
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
             return
@@ -94,40 +82,22 @@ class HammerStrategy(bt.Strategy):
         self.log(f'OPERATION PROFIT, GROSS {trade.pnl:.2f}, NET {trade.pnlcomm:.2f}')
 
     def next(self):
-        yclose = self.data.close.get(ago=-1)[0]
-        yopen = self.data.open.get(ago=-1)[0]
         if self.order:
             return
-        if not self.position:
-            if self.bullish_engulfing(self.Open[0], self.Close[0], yclose, yopen):
-                self.log('buy')
-                self.order = self.buy()
-                self.sl = self.Close[0] - 0.5 * self.atr
-                self.tp = self.Close[0] + 1 * self.atr
 
+        if not self.position:
+            if self.Close[0] < self.ema:
+                if self.hammer(self.Open[0], self.Close[0], self.High[0], self.Low[0]):
+                    amount_to_invest = 0.95 * self.broker.cash
+                    self.size = math.floor(amount_to_invest / self.Close[0])
+                    self.sl = self.Close[0] - 0.75 * self.atr
+                    self.tp = self.Close[0] + 1.5 * self.atr
+                    self.log(f'BUY CREATE {self.Close[0]:.2f}')
+                    self.order = self.buy(size=self.size)
         else:
             if self.Close[0] >= self.tp or self.Close[0] <= self.sl:
-                print('SELL')
-                self.order = self.sell()
+                print('oh no')
+                self.order = self.sell(size=self.size)
+                # self.order = self.close()
                 self.sl = None
                 self.tp = None
-        # if self.order:
-        #     return
-        #
-        # if not self.position:
-        #     if self.Close[0] < self.ema:
-        #         # self.log(self.Close[0])
-        #         if self.hammer(self.Open[0], self.Close[0], self.High[0], self.Low[0]):
-        #             self.sl = self.Close[0] - 0.75 * self.atr
-        #             self.tp = self.Close[0] + 1.5 * self.atr
-        #             self.log(f'BUY CREATE {self.Close[0]:.2f}')
-        #             self.log(f'Average True Range: {self.atr}')
-        #             self.log(f'Take Profit {self.tp}')
-        #             self.log(f'Stop Loss {self.sl}')
-        #             self.order = self.buy()
-        # else:
-        #     if self.Close[0] >= self.tp or self.Close[0] <= self.sl:
-        #         print('oh no')
-        #         self.order = self.sell()
-        #         self.sl = None
-        #         self.tp = None

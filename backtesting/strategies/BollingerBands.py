@@ -1,10 +1,12 @@
+import math
+
 import backtrader as bt
 
 
 class BollingerBandsStrategy(bt.Strategy):
-    # params = (
-    #     (),
-    # )
+    params = (
+        ('fast', 9), ('pct', 0.95)
+    )
 
     def log(self, txt, dt=None):
         """Logging function for this strategy"""
@@ -25,6 +27,10 @@ class BollingerBandsStrategy(bt.Strategy):
         self.bb_top = self.bb.lines.top
         self.bb_mid = self.bb.lines.mid
         self.bb_bot = self.bb.lines.bot
+        # self.sma = bt.indicators.MovingAverageSimple(self.data.close, period=self.params.fast)
+        self.atr = bt.indicators.ATR(period=14)
+        # self.ema = bt.indicators.ExponentialMovingAverage(self.data.close, period=200)
+        self.sl = None
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -38,6 +44,7 @@ class BollingerBandsStrategy(bt.Strategy):
                              f'Comm: {order.executed.comm:.2f}')
                     self.buyprice = order.executed.price
                     self.buycomm = order.executed.comm
+                    self.sl = self.buyprice - self.atr
                 elif order.issell():
                     self.log(f'SELL EXECUTED, '
                              f'Price: {order.executed.price:.2f}, '
@@ -65,10 +72,15 @@ class BollingerBandsStrategy(bt.Strategy):
 
             # Not yet, we might buy if
             if self.dataclose[0] < self.bb_bot:
-                self.log(f'BUY CREATE {self.dataclose[0]:.2f}')
-                self.order = self.buy()
+                amount = self.params.pct * self.broker.cash
+                size = math.floor(amount / self.data.close)
+                self.log(f'BUY CREATE of {size} at {self.dataclose[0]:.2f}')
+                self.order = self.buy(size=size)
         else:
             # Already in the market, we might sell
             if self.dataclose[0] >= self.bb_mid:
                 self.log(f'SELL CREATE, {self.dataclose[0]:.2f}')
-                self.order = self.sell()
+                self.order = self.sell(size=self.position.size)
+            if self.dataclose[0] < self.sl:
+                self.log(f'SL TRIGGERED, {self.dataclose[0]:.2f}')
+                self.order = self.sell(size=self.position.size)

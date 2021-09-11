@@ -5,10 +5,13 @@ import yfinance as yf
 
 def update_data():
     sp = pd.read_csv('markets/sp500.csv')
-    df = yf.download(' '.join(sp.Symbol.values), period='3mo', interval='1d')
+    df = yf.download(' '.join(sp.Symbol.values), period='5y', interval='1d')
     cols = df.columns.get_level_values(0).unique()
     for col in cols:
         df[f'{col}'].to_csv(f'data/sp/{col}_sp.csv')
+
+
+# update_data()
 
 
 def read_data_csv(market):
