@@ -1,8 +1,7 @@
 import backtrader as bt
 import math
-import talib
-import talib as ta
-import pandas as pd
+from backtesting.main import run
+
 
 
 class HammerStrategy(bt.Strategy):
@@ -101,3 +100,7 @@ class HammerStrategy(bt.Strategy):
                 # self.order = self.close()
                 self.sl = None
                 self.tp = None
+
+
+if __name__ == '__main__':
+    run(HammerStrategy, 'aapl')

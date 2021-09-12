@@ -1,39 +1,49 @@
 import backtrader as bt
-import yfinance as yf
-from time import time
+import sqlite3
+import pandas as pd
 
-from strategies.BollingerBands import BollingerBandsStrategy
-from strategies.Hammer import HammerStrategy
-from strategies.GoldenCross import GoldenCrossStrategy
-from strategies.BullishEngulfing import BullishEnglusfingStrategy
 
-# data = yf.download('ko', period='5y', interval='1d')
-# data.to_csv('data.csv')
+class PandasData(bt.feeds.PandasData):
+    params = (
+        ('datetime', 'date'),
+        ('open', 'open'),
+        ('high', 'high'),
+        ('low', 'low'),
+        ('close', 'close'),
+        ('volume', 'volume'),
+        ('openinterest', None)
+    )
 
-data = yf.download('spy', period='5y', interval='1d')
-data.to_csv('data.csv')
 
-t0 = time()
+def get_data(ticker, last=None, between=None):
+    if last:
+        date_range = f" AND date > date('now', '-{last} years')"
+    elif between:
+        d0, d1 = between
+        date_range = f" AND date BETWEEN date('{d0}-01-01') and date('{d1}-01-01')"
+    conn = sqlite3.connect(r'C:\Users\slama\PycharmProjects\traiding\database\stocks.db')
+    c = conn.cursor()
+    c.execute(f"select id from stock where ticker='{ticker.upper()}'")
+    stock_id = c.fetchone()[0]
+    df = pd.read_sql_query(f"select * from stock_price where stock_id={stock_id}" + date_range, conn)
+    conn.close()
+    df.date = pd.to_datetime(df.date)
+    df.set_index('date', drop=True, inplace=True)
+    return df.drop(columns=['id', 'stock_id', 'adjusted_close'])
+
+
+def run(strategy, name, cash=1000, years=5, plot=True):
+    cerebro = bt.Cerebro()
+    cerebro.addstrategy(strategy)
+    # data = bt.feeds.YahooFinanceData(dataname=data)
+    data = bt.feeds.PandasData(dataname=get_data(name, last=years))
+    cerebro.adddata(data)
+    cerebro.broker.setcash(cash)
+    # cerebro.broker.setcommission(0)
+    cerebro.run()
+    print(f'Starting Portfolio Value: {cash}. Final Portfolio Value: {cerebro.broker.getvalue():.2f}')
+    if plot:
+        # cerebro.plot(fmt_x_ticks='%Y-%b-%d')
+        cerebro.plot()
 
 # TODO: Stochastic indicator https://community.backtrader.com/topic/2435/stochastic-strategy-with-tp-and-stop-loss-how-to-reverse-position-why-is-the-commission-not-calculated
-
-if __name__ == '__main__':
-    # Create a cerebro entity
-    cerebro = bt.Cerebro()
-    # strats = cerebro.optstrategy(GoldenCrossStrategy,
-    #                              fast=range(5, 51, 5), slow=range(50, 101, 5))
-    cerebro.addstrategy(BollingerBandsStrategy)
-    # Create a Data Feed
-    data = bt.feeds.YahooFinanceData(dataname='data.csv')
-    cerebro.adddata(data)
-
-    cerebro.broker.setcash(1000)
-    # cerebro.broker.setcommission(0)
-    # cerebro.addsizer(bt.sizers.FixedSize, stake=5)
-
-    print(f'Starting Portfolio Value: {cerebro.broker.getvalue():.2f}')
-    cerebro.run()
-    print(f'Final Portfolio Value: {cerebro.broker.getvalue():.2f}')
-    cerebro.plot()
-
-print(f'Time taken: {time()  - t0:.2f}')

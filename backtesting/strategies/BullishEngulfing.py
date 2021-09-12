@@ -1,7 +1,6 @@
 import backtrader as bt
-import talib
-import talib as ta
-import pandas as pd
+
+from backtesting.main import run
 
 
 class BullishEnglusfingStrategy(bt.Strategy):
@@ -82,3 +81,7 @@ class BullishEnglusfingStrategy(bt.Strategy):
                 self.order = self.sell()
                 self.sl = None
                 self.tp = None
+
+
+if __name__ == '__main__':
+    run(BullishEnglusfingStrategy, 'aapl')

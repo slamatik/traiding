@@ -1,6 +1,8 @@
 import math
-
 import backtrader as bt
+
+
+from backtesting.main import run
 
 
 class BollingerBandsStrategy(bt.Strategy):
@@ -29,6 +31,7 @@ class BollingerBandsStrategy(bt.Strategy):
         self.bb_bot = self.bb.lines.bot
         # self.sma = bt.indicators.MovingAverageSimple(self.data.close, period=self.params.fast)
         self.atr = bt.indicators.ATR(period=14)
+        # self.atr.plotinfo.plot = False
         # self.ema = bt.indicators.ExponentialMovingAverage(self.data.close, period=200)
         self.sl = None
 
@@ -84,3 +87,7 @@ class BollingerBandsStrategy(bt.Strategy):
             if self.dataclose[0] < self.sl:
                 self.log(f'SL TRIGGERED, {self.dataclose[0]:.2f}')
                 self.order = self.sell(size=self.position.size)
+
+
+if __name__ == '__main__':
+    run(BollingerBandsStrategy, 'aapl')
