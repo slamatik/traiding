@@ -1,7 +1,6 @@
 import backtrader as bt
 import math
-from backtesting.main import run
-
+from backtesting.main import run, run_simple
 
 
 class HammerStrategy(bt.Strategy):
@@ -103,4 +102,5 @@ class HammerStrategy(bt.Strategy):
 
 
 if __name__ == '__main__':
-    run(HammerStrategy, 'aapl')
+    # run(HammerStrategy, 'aapl', years=1)
+    run_simple(HammerStrategy)

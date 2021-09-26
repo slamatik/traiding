@@ -1,38 +1,68 @@
 import backtrader as bt
+import talib as ta
 import yfinance as yf
-import pandas_datareader as pdr
 
-data = pdr.get_data_yahoo('AAPL')
-print(data)
+# todo find candlestick patterns
 
-#
-# data = yf.download('nio', period='5d', interval='60m')
-# data.to_csv('data.csv')
-#
-# class TestStrategy(bt.Strategy):
-#
-#     def log(self, txt, dt=None):
-#         """Logging function for this strategy"""
-#         dt = dt or self.datas[0].datetime.date(0)
-#         print(f'{dt.isoformat()}, {txt}')
-#
-#     def __init__(self):
-#         self.dataclose = self.datas[0].close
-#
-#
-#     def next(self):
-#         # self.log(f'Close {self.dataclose[0]:.2f}')
-#         self.log(self.dataclose[0])
-#
-# if __name__ == '__main__':
-#     cerebro = bt.Cerebro()
-#     cerebro.broker.setcash(100000.0)
-#     cerebro.addstrategy(TestStrategy)
-#     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
-#
-#     data = bt.feeds.YahooFinanceData(dataname='data.csv')
-#     cerebro.adddata(data)
-#
-#     cerebro.run()
-#
-#     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+yf.download('NIO', period='1y').to_csv('data.csv')
+
+
+class Golden(bt.Strategy):
+    def __init__(self):
+        self.order = None
+        self.buyprice = None
+        self.buycomm = None
+
+        self.candle = bt.talib.CDLHAMMER(self.data.open, self.data.high, self.data.low, self.data.close)
+        # self.ht = bt.talib.LINEARREG_INTERCEPT (self.data.close)
+
+    def notify_order(self, order):
+        if order.status in [order.Submitted, order.Accepted]:
+            return
+        if order.status in [order.Completed]:
+            if order.status in [order.Completed]:
+                if order.isbuy():
+                    self.log(f'BUY EXECUTED, '
+                             f'Price: {order.executed.price:.2f}, '
+                             f'Cost: {order.executed.value:.2f}, '
+                             f'Comm: {order.executed.comm:.2f}')
+                    self.buyprice = order.executed.price
+                    self.buycomm = order.executed.comm
+                elif order.issell():
+                    self.log(f'SELL EXECUTED, '
+                             f'Price: {order.executed.price:.2f}, '
+                             f'Cost: {order.executed.value:.2f}, '
+                             f'Comm: {order.executed.comm:.2f}')
+        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
+            self.log(f'Order Canceled/Margin/Rejected')
+
+        self.order = None
+
+    def notify_trade(self, trade):
+        if not trade.isclosed:
+            return
+        print(f'Bars Held: {trade.barlen}')
+        self.log(f'OPERATION PROFIT, GROSS {trade.pnl:.2f}, NET {trade.pnlcomm:.2f}')
+
+    def log(self, txt, dt=None, doprint=False):
+        if self.params.printlog or doprint:
+            dt = dt or self.datas[0].datetime.date(0)
+            print(f'{dt.isoformat()}, {txt}')
+
+
+if __name__ == '__main__':
+    # Create a cerebro entity
+    cerebro = bt.Cerebro()
+    cerebro.addstrategy(Golden)
+    # Create a Data Feed
+    data = bt.feeds.YahooFinanceData(dataname='data.csv')
+    cerebro.adddata(data)
+
+    cerebro.broker.setcash(1000)
+    # cerebro.broker.setcommission(0)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=5)
+
+    print(f'Starting Portfolio Value: {cerebro.broker.getvalue():.2f}')
+    cerebro.run()
+    print(f'Final Portfolio Value: {cerebro.broker.getvalue():.2f}')
+    cerebro.plot()

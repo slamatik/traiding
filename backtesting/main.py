@@ -5,12 +5,12 @@ import pandas as pd
 
 class PandasData(bt.feeds.PandasData):
     params = (
-        ('datetime', 'date'),
-        ('open', 'open'),
-        ('high', 'high'),
-        ('low', 'low'),
-        ('close', 'close'),
-        ('volume', 'volume'),
+        ('datetime', 'Date'),
+        ('open', 'Open'),
+        ('high', 'High'),
+        ('low', 'Low'),
+        ('close', 'Close'),
+        ('volume', 'Volume'),
         ('openinterest', None)
     )
 
@@ -25,11 +25,11 @@ def get_data(ticker, last=None, between=None):
     c = conn.cursor()
     c.execute(f"select id from stock where ticker='{ticker.upper()}'")
     stock_id = c.fetchone()[0]
-    df = pd.read_sql_query(f"select * from stock_price where stock_id={stock_id}" + date_range, conn)
+    df = pd.read_sql_query(f"select * from daily where ticker_id={stock_id}" + date_range, conn)
     conn.close()
-    df.date = pd.to_datetime(df.date)
-    df.set_index('date', drop=True, inplace=True)
-    return df.drop(columns=['id', 'stock_id', 'adjusted_close'])
+    df.Date = pd.to_datetime(df.Date)
+    df.set_index('Date', drop=True, inplace=True)
+    return df.drop(columns=['Adj Close', 'ticker', 'ticker_id'])
 
 
 def run(strategy, name, cash=1000, years=5, plot=True):
@@ -46,4 +46,20 @@ def run(strategy, name, cash=1000, years=5, plot=True):
         # cerebro.plot(fmt_x_ticks='%Y-%b-%d')
         cerebro.plot()
 
+
+def run_simple(strategy, cash=1000, plot=True):
+    cerebro = bt.Cerebro()
+    cerebro.addstrategy(strategy)
+    # data = bt.feeds.YahooFinanceData(dataname=data)
+    data = bt.feeds.YahooFinanceData(dataname=r'C:\Users\slama\PycharmProjects\traiding\backtesting\strategies\test_data\1min\aapl.csv')
+    cerebro.adddata(data)
+    cerebro.broker.setcash(cash)
+    # cerebro.broker.setcommission(0)
+    cerebro.run()
+    print(f'Starting Portfolio Value: {cash}. Final Portfolio Value: {cerebro.broker.getvalue():.2f}')
+    if plot:
+        # cerebro.plot(fmt_x_ticks='%Y-%b-%d')
+        cerebro.plot()
+
 # TODO: Stochastic indicator https://community.backtrader.com/topic/2435/stochastic-strategy-with-tp-and-stop-loss-how-to-reverse-position-why-is-the-commission-not-calculated
+#  more complex candelsticks patterns using ta lib or backtrader or coded myself

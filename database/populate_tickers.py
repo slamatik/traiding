@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 
-data = pd.read_csv(r'C:\Users\slama\PycharmProjects\traiding\markets\sp500.csv')
+data = pd.read_csv(r'C:\Users\slama\PycharmProjects\traiding\markets\nasdaq100.csv')
 
 
 def connect():
@@ -55,3 +55,5 @@ def delete_all():
     c.execute('delete from stock')
     conn.commit()
     conn.close()
+
+connect()
