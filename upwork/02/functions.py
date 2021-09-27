@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from xbbg import blp
 from datetime import datetime
-
+blp.bdp()
 import yfinance as yf
 
 # Graph Settings (can be moved to separate file if you want)

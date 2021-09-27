@@ -137,7 +137,7 @@ def plot_chart(data, n, ticker):
     plt.show()
 
 
-xlsx_file = Path('inputbb.xlsx')
+xlsx_file = Path('inputbb_old.xlsx')
 wb_obj = openpyxl.load_workbook(xlsx_file)
 # Read the active sheet:
 sheet = wb_obj.active

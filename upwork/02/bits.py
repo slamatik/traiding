@@ -3,8 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
+from xbbg import blp
 
 plt.style.use('Solarize_Light2')
+
+
 # plt.style.use('seaborn-whitegrid')
 
 
@@ -33,20 +36,7 @@ class BarChart:
 
 
 class HorizontalBarChart(BarChart):
-    def __init__(self, df, sort=None):
-        super().__init__(df)
-        if sort:
-            self.sort_data(sort)
-        fig, ax = plt.subplots(figsize=(12, 8))
-        for col in range(self.n_cols):
-            ax.bar(self.x + self.size * col, df[df.columns[col]], width=self.size, label=df.columns[col])
-        plt.xticks(self.x, df.index)
-        ax.legend()
-        plt.show()
-
-
-class VerticalBarChart(BarChart):
-    def __init__(self, df, sort=None):
+    def __init__(self, df, sort=False):
         super().__init__(df)
         if sort:
             self.sort_data(sort)
@@ -58,7 +48,20 @@ class VerticalBarChart(BarChart):
         plt.show()
 
 
-def gen_data():
+class VerticalBarChart(BarChart):
+    def __init__(self, df, sort=False):
+        super().__init__(df)
+        if sort:
+            self.sort_data(sort)
+        fig, ax = plt.subplots(figsize=(12, 8))
+        for col in range(self.n_cols):
+            ax.bar(self.x + self.size * col, df[df.columns[col]], width=self.size, label=df.columns[col])
+        plt.xticks(self.x, df.index)
+        ax.legend()
+        plt.show()
+
+
+def gen_yf_data():
     with open('yf_data.pkl', 'rb') as f:
         yf_data = pickle.load(f)
 
@@ -72,9 +75,23 @@ def gen_data():
     return yf_df
 
 
-# data = gen_data()
-# HorizontalBarChart(data)
+def download_data(tickers, fields, start_date=datetime.today()):
+    # temporary data
+    with open('data.pkl', 'rb') as f:
+        data = pickle.load(f)
+    data = data['bdp_mm']
 
+    # actual todo
+    # df = blp.bdp(tickers=tickers, flds=fields)
+
+    # df = blp.bdh()
+    # df = blp.bds()
+
+    return data
+
+
+# data = gen_yf_data()
+# HorizontalBarChart(data)
 
 if __name__ == '__main__':
     print('kek')

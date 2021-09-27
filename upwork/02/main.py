@@ -1,10 +1,22 @@
-from bits import HorizontalBarChart
+from bits import *
 
 import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
+
+
+def generate_bar_chart(plot_type, orientation, sorting, y_axis, date):
+    # Normal
+    if plot_type == 'b':
+        pass
+    # Clustered
+    if plot_type == 'c':
+        pass
+    # Stacked
+    if plot_type == 's':
+        pass
 
 
 # , engine='openpyxl'
@@ -24,8 +36,12 @@ def run():
         plot_type = row.plot_type
         orientation = row.orientation
         sorting = row.sorting
-        y_axis = row.y_axis # todo
+        y_axis = row.y_axis  # todo
         date = row.date
+
+        # convert fields to list if needed
+        if type(fields) == str:  # todo needs checking
+            fields = [fields]
 
         # Get list of tickers
         tickers = []
@@ -33,7 +49,8 @@ def run():
             if len(ticker_name) != 0:
                 tickers.append(ticker_name)
 
-        HorizontalBarChart()
+        df = download_data(tickers, fields)
+        print(df)
         break
 
 

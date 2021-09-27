@@ -1,7 +1,9 @@
-My next project would be to batch plot bar chart of the last values from excel (ticker input read) with similar setup (xbbg or yfinance for you) and export the picture (every excel row is a chart.
+My next project would be to batch plot bar chart of the last values from excel (ticker input read)
+with similar setup (xbbg or yfinance for you) and export the picture (every excel row is a chart.
 Each excel row should contain the following colums
 - save picture name which is also the headline graph title
--xbbg~bloomberg field ( like px-last) that reference to the api what data from the ticker to get (price or volume or a financial ratio like price to earnings)
+-xbbg~bloomberg field ( like px-last) that reference to the api what data from the ticker to get
+(price or volume or a financial ratio like price to earnings)
 - date of value default =today
 - sorting (ascending/decending/no sorting as default)
 -horizontal (default) or vertical bar chart
@@ -13,5 +15,6 @@ of different bar chart types ( like stacked etc.) that would be awesome as an ex
 
 interested? Expected renumeration? Do i need you to draft the excel?
 
-Sure. Please check out the xbbg dock for a better understanding.its similar to Yfinance just more mighty and unfortunately not accessible for you. Thats a bit of a challenge.
+Sure. Please check out the xbbg dock for a better understanding.
+its similar to Yfinance just more mighty and unfortunately not accessible for you. Thats a bit of a challenge.
 
