@@ -7,40 +7,44 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 
+# , engine='openpyxl'
 def run():
-    excel = pd.read_excel('BarLoader.xlsx', nrows=8, na_filter=False, dtype={'date':datetime})
+    # Get Data from excel
+    excel = pd.read_excel('BarLoader.xlsx', nrows=8, usecols=list(range(9)), na_filter=False, dtype={'date': datetime},
+                          engine='openpyxl')
+    excel = excel.replace(to_replace='\s+', value='', regex=True)
+    excel = excel.replace({'plot_type': {'': 'b'},
+                           'orientation': {'': 'h'},
+                           'sorting': {'': None},
+                           'y_axis': {'': 'l'}})
     # print(excel.columns[8::2])
     for idx, row in excel.iterrows():
-        # Fields
-        fields = row.field
-
-        # Plot type
+        name = row.name
+        fields = row.fields
         plot_type = row.plot_type
-        if len(plot_type) == 0:
-            plot_type = 'b'
-
-        # Orientation
-        if len(plot_type) == 0:
-            orientation = 'h'
-
-        # Sorting
-
-
-        # y_axis todo at the end
-
+        orientation = row.orientation
+        sorting = row.sorting
+        y_axis = row.y_axis # todo
+        date = row.date
 
         # Get list of tickers
         tickers = []
         for ticker_name in row[8::2]:
             if len(ticker_name) != 0:
                 tickers.append(ticker_name)
+
+        HorizontalBarChart()
         break
 
 
 if __name__ == '__main__':
-    # run()
-    excel = pd.read_excel('BarLoader.xlsx', nrows=8, usecols=list(range(9)), na_filter=False, dtype={'date':datetime})
-    excel = excel.replace(to_replace='\s+', value='', regex=True)
-    excel = excel.replace({'plot_type': {'': 'b'}, 'orientation': {'': 'h'}, 'sorting': {'': None}, 'y_axis': {'': 'l'}})
-    print(excel.sorting)
-    print(excel.y_axis)
+    run()
+    # excel = pd.read_excel('BarLoader.xlsx', nrows=8, usecols=list(range(9)), na_filter=False, dtype={'date': datetime},
+    #                       engine='openpyxl')
+    # excel = excel.replace(to_replace='\s+', value='', regex=True)
+    # excel = excel.replace({'plot_type': {'': 'b'},
+    #                        'orientation': {'': 'h'},
+    #                        'sorting': {'': None},
+    #                        'y_axis': {'': 'l'}})
+    # print(excel.sorting)
+    # print(excel.y_axis)
