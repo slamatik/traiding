@@ -50,8 +50,7 @@ class GoldenCrossStrategy(bt.Strategy):
     def notify_trade(self, trade):
         if not trade.isclosed:
             return
-        print(f'Bars Held: {trade.barlen}')
-        self.log(f'OPERATION PROFIT, GROSS {trade.pnl:.2f}, NET {trade.pnlcomm:.2f}')
+        self.log(f'OPERATION PROFIT, GROSS {trade.pnl:.2f}, NET {trade.pnlcomm:.2f}, Bars Held: {trade.barlen}')
 
     def next(self):
         if self.order:

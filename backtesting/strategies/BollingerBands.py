@@ -2,7 +2,7 @@ import math
 import backtrader as bt
 
 
-from backtesting.main import run
+from backtesting.main import run, run_simple
 
 
 class BollingerBandsStrategy(bt.Strategy):
@@ -90,4 +90,4 @@ class BollingerBandsStrategy(bt.Strategy):
 
 
 if __name__ == '__main__':
-    run(BollingerBandsStrategy, 'aapl')
+    run_simple(BollingerBandsStrategy)

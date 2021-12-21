@@ -1,3 +1,5 @@
+import datetime
+
 import backtrader as bt
 import sqlite3
 import pandas as pd
@@ -47,11 +49,19 @@ def run(strategy, name, cash=1000, years=5, plot=True):
         cerebro.plot()
 
 
-def run_simple(strategy, cash=1000, plot=True):
+def run_simple(strategy, data, cash=1000, plot=True):
     cerebro = bt.Cerebro()
     cerebro.addstrategy(strategy)
+
     # data = bt.feeds.YahooFinanceData(dataname=data)
-    data = bt.feeds.YahooFinanceData(dataname=r'C:\Users\slama\PycharmProjects\traiding\backtesting\strategies\test_data\1min\aapl.csv')
+    # data = bt.feeds.YahooFinanceData(dataname=r'C:\Users\slama\PycharmProjects\traiding\backtesting\strategies\test_data\daily\aapl.csv')
+    data = bt.feeds.GenericCSVData(dataname=data,
+                                     timeframe=bt.TimeFrame.Minutes,
+                                     compression=1,
+                                     sessionstart=datetime.time(9, 30),
+                                     sessionend=datetime.time(16, 0),
+                                     dtformat='%Y-%m-%d %H:%M:%S',
+                                     open=1, high=2, low=3, close=4, volume=5)
     cerebro.adddata(data)
     cerebro.broker.setcash(cash)
     # cerebro.broker.setcommission(0)

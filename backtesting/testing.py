@@ -14,7 +14,7 @@ class Golden(bt.Strategy):
         self.buycomm = None
 
         self.candle = bt.talib.CDLHAMMER(self.data.open, self.data.high, self.data.low, self.data.close)
-        # self.ht = bt.talib.LINEARREG_INTERCEPT (self.data.close)
+        self.macd = bt.indicators.MACD()
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -48,6 +48,14 @@ class Golden(bt.Strategy):
         if self.params.printlog or doprint:
             dt = dt or self.datas[0].datetime.date(0)
             print(f'{dt.isoformat()}, {txt}')
+
+    def next(self):
+        if self.order: return
+
+        if not self.position:
+
+            print(self.macd.signal[0])
+            print(self.macd.macd[0])
 
 
 if __name__ == '__main__':
